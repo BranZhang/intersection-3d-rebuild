@@ -36,9 +36,11 @@ INSERT_FINAL_ROADS_DATA_TO_TABLE = ""
 warning:host is not 127.0.0.1, must be "localhost".
 possible answer:
 http://www.postgresql-archive.org/psql-connection-via-localhost-or-127-0-0-1-td5825934.html
+home:gis_shanghai
+company:shanghai_test_data
 '''
 POSTGREDB = {
-    "database":"shanghai_test_data",
+    "database":"gis_shanghai",
     "user":"postgres",
     "password":"qq281134181",
     "host":"localhost",

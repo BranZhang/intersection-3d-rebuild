@@ -1,6 +1,9 @@
 import psycopg2
+import psycopg2.extras
+
 import config
 import datetime
+from Object.short_line import ShortLine 
 
 CONN = ""
 TIME_SIGN = ""
@@ -88,12 +91,19 @@ def insert_target_data_to_temp_roads_table():
 
 
 def query_temp_roads():
+    '''
+    tested.
+    '''
     global CONN
     global TIME_SIGN
 
-    cur = CONN.cursor()
+    cur = CONN.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute(config.QUERY_TEMP_ROADS % (""))
-    result = cur.fetchall()
+
+    result = []
+
+    for row in cur:
+        result.append(ShortLine(row))
 
     return result
 
