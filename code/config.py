@@ -38,7 +38,7 @@ possible answer:
 http://www.postgresql-archive.org/psql-connection-via-localhost-or-127-0-0-1-td5825934.html
 '''
 POSTGREDB = {
-    "database":"gis_seattle",
+    "database":"shanghai_test_data",
     "user":"postgres",
     "password":"qq281134181",
     "host":"localhost",

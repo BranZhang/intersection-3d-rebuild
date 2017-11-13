@@ -1,8 +1,11 @@
 --create table to store only main roads' intersection points.
-CREATE TABLE intersection_points_%s (
+CREATE TABLE IF NOT EXISTS intersection_points_%s (
     id SERIAL PRIMARY KEY, 
     location GEOMETRY(POINT,3857)
     );
+
+--clear.
+DELETE FROM intersection_points_%s;
 
 --insert data to table.
 INSERT INTO intersection_points_%s (location) 

@@ -1,5 +1,5 @@
 --create table to store roads data with real height
-CREATE TABLE test_ways_%s (
+CREATE TABLE IF NOT EXISTS target_ways_%s (
     osm_id bigint,
     access text COLLATE pg_catalog."default",
     "addr:housename" text COLLATE pg_catalog."default",

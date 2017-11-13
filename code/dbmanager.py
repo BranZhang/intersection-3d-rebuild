@@ -83,7 +83,7 @@ def insert_target_data_to_temp_roads_table():
     global TIME_SIGN
 
     cur = CONN.cursor()
-    cur.execute(config.INSERT_TARGET_DATA_TO_TEMP_ROADS_TABLE % (""))
+    cur.execute(config.INSERT_TARGET_DATA_TO_TEMP_ROADS_TABLE % ("", ""))
     CONN.commit()
 
 
@@ -92,8 +92,10 @@ def query_temp_roads():
     global TIME_SIGN
 
     cur = CONN.cursor()
-    cur.execute(config.QUERY_TEMP_ROADS)
-    CONN.commit()
+    cur.execute(config.QUERY_TEMP_ROADS % (""))
+    result = cur.fetchall()
+
+    return result
 
 
 def query_total_intersection_points():
