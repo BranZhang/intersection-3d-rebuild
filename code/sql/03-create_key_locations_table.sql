@@ -1,1 +1,0 @@
---create table to store key locations of intersection points
