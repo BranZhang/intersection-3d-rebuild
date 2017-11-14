@@ -4,6 +4,7 @@ import psycopg2.extras
 import config
 import datetime
 from Object.short_line import ShortLine 
+from Object.geomtry_point import GeoPoint 
 
 CONN = ""
 TIME_SIGN = ""
@@ -112,9 +113,14 @@ def query_total_intersection_points():
     global CONN
     global TIME_SIGN
 
-    cur = CONN.cursor()
-    cur.execute(config.QUERY_TOTAL_INTERSECTION_POINTS)
-    CONN.commit()
+    cur = CONN.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute(config.QUERY_TOTAL_INTERSECTION_POINTS % ("", ""))
+    result = []
+
+    for row in cur:
+        result.append(GeoPoint(row))
+
+    return result
 
 
 def create_final_roads_table():
