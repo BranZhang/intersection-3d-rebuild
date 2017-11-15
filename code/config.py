@@ -40,7 +40,7 @@ home:gis_shanghai
 company:shanghai_test_data
 '''
 POSTGREDB = {
-    "database":"gis_shanghai",
+    "database":"shanghai_test_data",
     "user":"postgres",
     "password":"qq281134181",
     "host":"localhost",

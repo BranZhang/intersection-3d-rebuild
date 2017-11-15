@@ -118,7 +118,7 @@ def query_total_intersection_points():
     result = []
 
     for row in cur:
-        result.append(GeoPoint(row))
+        result.append(GeoPoint('database', row))
 
     return result
 
