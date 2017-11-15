@@ -16,7 +16,7 @@ def main():
     intersection_point_data = dbmanager.query_total_intersection_points()
 
     # get complete road data from original road data.
-    complete_road_string_data = get_complete_road_string(
+    complete_road_string_data = get_complete_road_string_list(
         original_road_string_data)
     '''
     complete_road_string_data must be checked by QGIS.
@@ -36,11 +36,25 @@ def main():
     dbmanager.disconnect_to_database()
 
 
-def get_complete_road_string(original_road_string_data):
+def get_complete_road_string_list(original_road_string_data):
     '''
     todo
     '''
     result = []
+    roads_id_list = []
+
+    for single_string in original_road_string_data:
+        if single_string.base_data['osm_id'] in roads_id_list:
+            continue
+
+        single_road = []
+        # do something.
+
+        result.append(single_road)
+        for temp in single_road:
+            if temp.base_data['osm_id'] not in roads_id_list:
+                roads_id_list.append(temp.base_data['osm_id'])
+
     return result
 
 
