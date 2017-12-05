@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS target_ways_%s (
     width text COLLATE pg_catalog."default",
     wood text COLLATE pg_catalog."default",
     z_order integer,
+    road_code_list text COLLATE pg_catalog."default",
     way_area real,
     way geometry
 );

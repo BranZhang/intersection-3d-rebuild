@@ -10,4 +10,4 @@ def get_bearing_angle(start_geo_point, end_geo_point):
     '''
     return math.atan(
         (end_geo_point.latitude - start_geo_point.latitude)
-        / (end_geo_point.longitude - start_geo_point.longitude))
+        / (end_geo_point.longitude - start_geo_point.longitude)) * 180.0 / math.pi

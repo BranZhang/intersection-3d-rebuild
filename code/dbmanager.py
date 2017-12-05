@@ -110,6 +110,9 @@ def query_temp_roads():
 
 
 def query_total_intersection_points():
+    '''
+    tested.
+    '''
     global CONN
     global TIME_SIGN
 
@@ -138,4 +141,12 @@ def insert_final_roads_data_to_table():
 
     cur = CONN.cursor()
     cur.execute(config.INSERT_FINAL_ROADS_DATA_TO_TABLE)
+    CONN.commit()
+
+def update_temp_road_code_list(road_code_list, short_line_id):
+    global CONN
+    global TIME_SIGN
+
+    cur = CONN.cursor()
+    cur.execute(config.UPDATE_TEMP_ROAD_CODE_LIST % ("", road_code_list, short_line_id))
     CONN.commit()

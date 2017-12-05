@@ -10,7 +10,8 @@ SQL_FILE = {"create_insert_intersection_points_table": "\\sql\\01-create_insert_
             "query_temp_roads":"\\sql\\07-query_temp_roads.sql",
             "query_total_intersection_points":"\\sql\\08-query_total_intersection_points.sql",
             "create_final_roads_table": "\\sql\\09-create_final_roads_table.sql",
-            "insert_final_roads_data_to_table": "\\sql\\10-insert_final_roads_data_to_table.sql"}
+            "insert_final_roads_data_to_table": "\\sql\\10-insert_final_roads_data_to_table.sql",
+            "update_temp_road_code_list": "\\sql\\99_update_temp_road_code_list.sql"}
 
 CREATE_INSERT_INTERSECTION_POINTS_TABLE = ""
 
@@ -32,6 +33,8 @@ CREATE_FINAL_ROADS_TABLE = ""
 
 INSERT_FINAL_ROADS_DATA_TO_TABLE = ""
 
+UPDATE_TEMP_ROAD_CODE_LIST = ""
+
 '''
 warning:host is not 127.0.0.1, must be "localhost".
 possible answer:
@@ -40,7 +43,7 @@ home:gis_shanghai
 company:shanghai_test_data
 '''
 POSTGREDB = {
-    "database":"gis_shanghai",
+    "database":"shanghai_test_data",
     "user":"postgres",
     "password":"qq281134181",
     "host":"localhost",
@@ -61,6 +64,7 @@ def init_config():
     global QUERY_TOTAL_INTERSECTION_POINTS
     global CREATE_FINAL_ROADS_TABLE
     global INSERT_FINAL_ROADS_DATA_TO_TABLE
+    global UPDATE_TEMP_ROAD_CODE_LIST
 
     CREATE_INSERT_INTERSECTION_POINTS_TABLE = read_file(
         sys.path[0] + SQL_FILE["create_insert_intersection_points_table"])
@@ -82,6 +86,8 @@ def init_config():
         sys.path[0] + SQL_FILE["create_final_roads_table"])
     INSERT_FINAL_ROADS_DATA_TO_TABLE = read_file(
         sys.path[0] + SQL_FILE["insert_final_roads_data_to_table"])
+    UPDATE_TEMP_ROAD_CODE_LIST = read_file(
+        sys.path[0] + SQL_FILE["update_temp_road_code_list"])
 
 def read_file(filepath):
     '''

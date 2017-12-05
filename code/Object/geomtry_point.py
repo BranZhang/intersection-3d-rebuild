@@ -4,10 +4,12 @@ todo
 
 import geojson
 
+
 class GeoPoint(object):
     '''
     geopoint
     '''
+
     def __init__(self, parameter_type, args):
         if parameter_type == 'database':
             self.base_data = args
@@ -21,3 +23,6 @@ class GeoPoint(object):
         elif parameter_type == 'location':
             self.latitude = args[0]
             self.longitude = args[1]
+
+    def equal(self, other_geopoint):
+        return other_geopoint.latitude == self.latitude and other_geopoint.longitude == self.longitude
