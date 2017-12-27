@@ -148,5 +148,5 @@ def update_temp_road_code_list(road_code_list, short_line_id):
     global TIME_SIGN
 
     cur = CONN.cursor()
-    cur.execute(config.UPDATE_TEMP_ROAD_CODE_LIST % ("", road_code_list, short_line_id))
+    cur.execute(config.UPDATE_TEMP_ROAD_CODE_LIST % ("", short_line_id, road_code_list))
     CONN.commit()

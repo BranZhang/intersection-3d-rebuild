@@ -2,10 +2,10 @@
 main process.
 
 '''
-import math
 import config
 import dbmanager
-
+import Object.gistools as gistools
+from Object.road import Road
 
 def main():
     config.init_config()
@@ -23,7 +23,7 @@ def main():
 
     update_road_code_to_database(complete_road_string_data)
     '''
-    complete_road_string_data must be checked by QGIS.
+    complete_road_string_data must be checked on QGIS.
     '''
 
     # confirm each intersection point's matching road height at this point.
@@ -54,27 +54,29 @@ def get_complete_road_string_list(original_road_string_data):
         single_road = []
         single_road.append(single_string)
 
-        current_string = (single_string, "start")
+        current_string = single_string
         while True:
+            current_string.check_tag = "end"
             next_string = get_next_single_road_string(
                 current_string, original_road_string_data)
             if next_string:
                 current_string = next_string
-                single_road.append(next_string[0])
+                single_road.append(next_string)
             else:
                 break
 
-        current_string = (single_string, "end")
+        current_string = single_string
         while True:
+            current_string.check_tag = "start"
             next_string = get_next_single_road_string(
                 current_string, original_road_string_data)
             if next_string:
                 current_string = next_string
-                single_road.insert(0, next_string[0])
+                single_road.insert(0, next_string)
             else:
                 break
 
-        result.append(single_road)
+        result.append(Road(single_road))
         for temp in single_road:
             if temp.base_data['osm_id'] not in already_deal_roads_id_list:
                 already_deal_roads_id_list.append(temp.base_data['osm_id'])
@@ -82,40 +84,28 @@ def get_complete_road_string_list(original_road_string_data):
     if len(already_deal_roads_id_list) != len(original_road_string_data):
         print 'bad deal.'
 
+    result.sort(key=lambda r: r.distance, reverse=True)
+
     return result
 
 
 def get_next_single_road_string(current_string, original_road_string_data):
 
     target_dict = {}
+    target_point = current_string.get_analyse_point()
 
     for single_string in original_road_string_data:
-        if single_string.database_id == current_string[0].database_id:
-            continue
-        # notice differ between 'end' and 'start'
-        if current_string[1] == 'start':
-            if single_string.start_point.equal(current_string[0].start_point):
-                target_dict[(single_string, 'end')] = single_string.start_angle
-            elif single_string.end_point.equal(current_string[0].start_point):
-                target_dict[(single_string, 'start')] = single_string.end_angle
-        elif current_string[1] == 'end':
-            if single_string.start_point.equal(current_string[0].end_point):
-                target_dict[(single_string, 'end')] = single_string.start_angle
-            elif single_string.end_point.equal(current_string[0].end_point):
-                target_dict[(single_string, 'start')] = single_string.end_angle
+        if (single_string.database_id != current_string.database_id) and single_string.match(target_point):
+            target_dict[single_string] = gistools.get_angle_by_vector(current_string, single_string)
 
-    if len(target_dict) == 1:
-        return target_dict.items()[0][0]
+    if len(target_dict) == 0:
+        return None
 
-    if current_string[1] == 'start':
-        target_angle = current_string[0].start_angle
-    elif current_string[1] == 'end':
-        target_angle = current_string[0].end_angle
-
-    for single_string in sorted(target_dict.iteritems(), key=lambda x: abs(x[1] - target_angle)):
-        return single_string[0]
-
-    return None
+    for single_string in sorted(target_dict.iteritems(), key=lambda x: 180 - x[1]):
+        if single_string[1] < 90:
+            return None
+        else:
+            return single_string[0]
 
 
 def update_road_code_to_database(complete_road_string_data):
@@ -124,7 +114,7 @@ def update_road_code_to_database(complete_road_string_data):
     road_count = 0
 
     for road in complete_road_string_data:
-        for single_string in road:
+        for single_string in road.short_line_list:
             if road_code_dict.has_key(single_string.database_id):
                 road_code_dict[single_string.database_id] = road_code_dict[single_string.database_id] + "[A%s]" % (road_count)
             else:
@@ -132,7 +122,8 @@ def update_road_code_to_database(complete_road_string_data):
         
         road_count += 1
 
-    dbmanager.update_temp_road_code_list("", "")
+    for id in road_code_dict:
+        dbmanager.update_temp_road_code_list(id, road_code_dict[id])
 
 if __name__ == '__main__':
     main()

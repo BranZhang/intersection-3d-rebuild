@@ -1,6 +1,10 @@
+'''
+configuration parameters
+'''
 import sys
 
-SQL_FILE = {"create_insert_intersection_points_table": "\\sql\\01-create_insert_intersection_points_table.sql",
+SQL_FILE = {"create_insert_intersection_points_table":
+            "\\sql\\01-create_insert_intersection_points_table.sql",
             "query_intersection_points": "\\sql\\02-query_intersection_points.sql",
             "create_insert_key_locations_table": "\\sql\\03-create_insert_key_locations_table.sql",
             "query_key_locations": "\\sql\\04-query_key_locations.sql",
@@ -35,13 +39,6 @@ INSERT_FINAL_ROADS_DATA_TO_TABLE = ""
 
 UPDATE_TEMP_ROAD_CODE_LIST = ""
 
-'''
-warning:host is not 127.0.0.1, must be "localhost".
-possible answer:
-http://www.postgresql-archive.org/psql-connection-via-localhost-or-127-0-0-1-td5825934.html
-home:gis_shanghai
-company:shanghai_test_data
-'''
 POSTGREDB = {
     "database":"shanghai_test_data",
     "user":"postgres",

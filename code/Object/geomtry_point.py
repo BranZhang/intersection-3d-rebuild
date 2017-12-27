@@ -15,14 +15,14 @@ class GeoPoint(object):
             self.base_data = args
             self.geo_data = geojson.loads(self.base_data["cross_point"])
 
-            self.latitude = self.geo_data['coordinates'][0]
-            self.longitude = self.geo_data['coordinates'][1]
+            self.longitude = self.geo_data['coordinates'][0]
+            self.latitude = self.geo_data['coordinates'][1]
             self.parent_line_ids = []
             self.parent_line_ids.append(self.base_data['first_way_id'])
             self.parent_line_ids.append(self.base_data['second_way_id'])
         elif parameter_type == 'location':
-            self.latitude = args[0]
-            self.longitude = args[1]
+            self.longitude = args[0]
+            self.latitude = args[1]
 
     def equal(self, other_geopoint):
         return other_geopoint.latitude == self.latitude and other_geopoint.longitude == self.longitude
