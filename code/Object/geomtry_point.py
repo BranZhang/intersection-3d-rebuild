@@ -2,7 +2,7 @@
 todo
 '''
 
-import geojson
+# import geojson
 
 
 class GeoPoint(object):
@@ -10,19 +10,9 @@ class GeoPoint(object):
     geopoint
     '''
 
-    def __init__(self, parameter_type, args):
-        if parameter_type == 'database':
-            self.base_data = args
-            self.geo_data = geojson.loads(self.base_data["cross_point"])
-
-            self.longitude = self.geo_data['coordinates'][0]
-            self.latitude = self.geo_data['coordinates'][1]
-            self.parent_line_ids = []
-            self.parent_line_ids.append(self.base_data['first_way_id'])
-            self.parent_line_ids.append(self.base_data['second_way_id'])
-        elif parameter_type == 'location':
-            self.longitude = args[0]
-            self.latitude = args[1]
+    def __init__(self, location):
+        self.longitude = location[0]
+        self.latitude = location[1]
 
     def equal(self, other_geopoint):
         return other_geopoint.latitude == self.latitude and other_geopoint.longitude == self.longitude

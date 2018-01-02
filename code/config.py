@@ -12,7 +12,7 @@ SQL_FILE = {"create_insert_intersection_points_table":
             "insert_target_data_to_temp_roads_table":
             "\\sql\\06-insert_target_data_to_temp_roads_table.sql",
             "query_temp_roads":"\\sql\\07-query_temp_roads.sql",
-            "query_total_intersection_points":"\\sql\\08-query_total_intersection_points.sql",
+            "query_main_road_intersection_points":"\\sql\\08-query_main_road_intersection_points.sql",
             "create_final_roads_table": "\\sql\\09-create_final_roads_table.sql",
             "insert_final_roads_data_to_table": "\\sql\\10-insert_final_roads_data_to_table.sql",
             "update_temp_road_code_list": "\\sql\\99_update_temp_road_code_list.sql"}
@@ -31,7 +31,7 @@ INSERT_TARGET_DATA_TO_TEMP_ROADS_TABLE = ""
 
 QUERY_TEMP_ROADS = ""
 
-QUERY_TOTAL_INTERSECTION_POINTS = ""
+QUERY_MAIN_ROAD_INTERSECTION_POINTS = ""
 
 CREATE_FINAL_ROADS_TABLE = ""
 
@@ -58,7 +58,7 @@ def init_config():
     global CREATE_TEMP_ROADS_TABLE
     global INSERT_TARGET_DATA_TO_TEMP_ROADS_TABLE
     global QUERY_TEMP_ROADS
-    global QUERY_TOTAL_INTERSECTION_POINTS
+    global QUERY_MAIN_ROAD_INTERSECTION_POINTS
     global CREATE_FINAL_ROADS_TABLE
     global INSERT_FINAL_ROADS_DATA_TO_TABLE
     global UPDATE_TEMP_ROAD_CODE_LIST
@@ -77,8 +77,8 @@ def init_config():
         sys.path[0] + SQL_FILE["insert_target_data_to_temp_roads_table"])
     QUERY_TEMP_ROADS = read_file(
         sys.path[0] + SQL_FILE["query_temp_roads"])
-    QUERY_TOTAL_INTERSECTION_POINTS = read_file(
-        sys.path[0] + SQL_FILE["query_total_intersection_points"])
+    QUERY_MAIN_ROAD_INTERSECTION_POINTS = read_file(
+        sys.path[0] + SQL_FILE["query_main_road_intersection_points"])
     CREATE_FINAL_ROADS_TABLE = read_file(
         sys.path[0] + SQL_FILE["create_final_roads_table"])
     INSERT_FINAL_ROADS_DATA_TO_TABLE = read_file(

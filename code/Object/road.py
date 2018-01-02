@@ -1,8 +1,15 @@
-import gistools
+'''
+todo
+'''
+from Object.gistools import get_distance
 
 class Road(object):
+    '''
+    road of several short lines
+    '''
 
     def __init__(self, short_line_list):
+        self.road_id = ""
         self.short_line_list = short_line_list
         if len(short_line_list) == 1:
             self.start_point = short_line_list[0].start_point
@@ -24,4 +31,8 @@ class Road(object):
             else:
                 self.end_point = short_line_list[len(
                     short_line_list) - 1].start_point
-        self.distance = gistools.get_distance(self.start_point, self.end_point)
+        self.distance = get_distance(self.start_point, self.end_point)
+        self.hight_score = 0
+
+    def add_hight_score(self):
+        self.hight_score = self.hight_score + 1

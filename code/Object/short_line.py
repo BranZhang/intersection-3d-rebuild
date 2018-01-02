@@ -3,7 +3,6 @@ todo
 '''
 import geojson
 from Object.geomtry_point import GeoPoint
-from Object.gistools import get_bearing_angle
 
 
 class ShortLine(object):
@@ -15,10 +14,11 @@ class ShortLine(object):
         self.base_data = db_data
         self.geo_data = geojson.loads(self.base_data["st_asgeojson"])
         self.database_id = self.base_data['osm_id']
+        self.z_order = self.base_data['z_order']
         self.point_list = []
 
         for p in self.geo_data["coordinates"]:
-            self.point_list.append(GeoPoint('location', p))
+            self.point_list.append(GeoPoint(p))
 
         self.start_point = self.point_list[0]
         self.end_point = self.point_list[len(self.point_list) - 1]
