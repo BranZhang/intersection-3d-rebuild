@@ -5,6 +5,7 @@ import config
 import dbmanager
 import Object.gistools as gistools
 from Object.road import Road
+from Object.touch_point import TouchPoint
 
 
 def main():
@@ -28,17 +29,19 @@ def main():
     # get all CROSS, TOUCH, END type points
     # points data must be checked on QGIS.
 
-    # get CROSS type
-    intersection_points = dbmanager.query_main_road_intersection_points()
+    # get CROSS type point
+    cross_points = dbmanager.query_main_road_intersection_points()
 
-    # get TOUCH type
-    
+    # get TOUCH type point
+    touch_points = get_each_road_touch_points(complete_road_string_data)
 
-    # get END type
+    # get END type point
+    end_points = get_each_road_end_points(
+        complete_road_string_data, touch_points)
 
+    # check points
 
     # calculate each point's height.
-
 
     # interpolate each complete road.
 
@@ -138,31 +141,40 @@ def update_road_code_to_database(complete_road_string_data):
         dbmanager.update_temp_road_code_list(id, road_code_dict[id])
 
 
-
-
-def order_road_by_z_order(intersection_points, original_short_line_data, complete_road_string_data):
-    for point in intersection_points:
-        if len(point.parent_line_ids) != 2:
-            continue
-        if original_short_line_data.has_key(point.parent_line_ids[0]) and \
-            original_short_line_data.has_key(point.parent_line_ids[1]):
-            short_line1 = original_short_line_data[point.parent_line_ids[0]]
-            short_line2 = original_short_line_data[point.parent_line_ids[1]]
-            if short_line1.z_order > short_line2.z_order:
-                for road in complete_road_string_data:
-                    if short_line1 in road.short_line_list:
-                        road.hight_score += 1
-                    if short_line2 in road.short_line_list:
-                        road.hight_score -= 1
+def get_each_road_touch_points(complete_road_string_data):
+    touch_points = {}
+    for road in complete_road_string_data:
+        single_road_touch_point = dbmanager.query_main_road_touch_points(
+            road.road_id)
+        for point in single_road_touch_point:
+            if touch_points.has_key(point):
+                touch_points[point].append(road.road_id)
             else:
-                for road in complete_road_string_data:
-                    if short_line1 in road.short_line_list:
-                        road.hight_score -= 1
-                    if short_line2 in road.short_line_list:
-                        road.hight_score += 1
+                touch_points[point] = [road.road_id]
 
-    complete_road_string_data.sort(key=lambda r: r.hight_score)
-    return complete_road_string_data
+    # touch_points_list = []
+
+    # for (location, road_id_list) in touch_points:
+    #     touch_points_list.append(TouchPoint(location[0], location[1], road_id_list))
+
+    return touch_points
+
+
+def get_each_road_end_points(complete_road_string_data, touch_points):
+    end_points = {}
+    for road in complete_road_string_data:
+        single_road_end_points = dbmanager.query_main_road_end_points(
+            road.road_id)
+
+        for point in single_road_end_points:
+            if touch_points.has_key(point.get_location()) and \
+                (road.road_id not in touch_points[point.get_location()]):
+                touch_points[point.get_location()].append(road.road_id)
+            else:
+                end_points[point.get_location()] = road.road_id
+
+    return end_points
+
 
 if __name__ == '__main__':
     main()

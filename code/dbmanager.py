@@ -7,9 +7,10 @@ import psycopg2
 import psycopg2.extras
 
 import config
-from Object.geomtry_point import GeoPoint
-from Object.intersection_point import IntersectionPoint
 from Object.short_line import ShortLine
+from Object.intersection_point import IntersectionPoint
+from Object.touch_point import TouchPoint
+from Object.end_point import EndPoint
 
 CONN = ""
 TIME_SIGN = ""
@@ -133,6 +134,35 @@ def query_main_road_intersection_points():
     return result
 
 
+def query_main_road_touch_points(road_id):
+    global CONN
+    global TIME_SIGN
+
+    cur = CONN.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute(config.QUERY_SINGLE_ROAD_TOUCH_POINTS.format(timesign='', road_id=road_id))
+    result = []
+
+    for row in cur:
+        result.append((row['x'], row['y']))
+
+    return result
+
+
+def query_main_road_end_points(road_id):
+    global CONN
+    global TIME_SIGN
+
+    cur = CONN.cursor()
+    cur.execute(config.QUERY_SINGLE_ROAD_END_POINTS.format(timesign='', road_id=road_id))
+    result = []
+
+    for row in cur:
+        result.append(EndPoint(row[0]))
+        result.append(EndPoint(row[1]))
+
+    return result
+
+
 def create_final_roads_table():
     global CONN
     global TIME_SIGN
@@ -152,6 +182,15 @@ def insert_final_roads_data_to_table():
 
 
 def update_temp_road_code_list(short_line_id, road_code_list):
+    global CONN
+    global TIME_SIGN
+
+    cur = CONN.cursor()
+    cur.execute(config.UPDATE_TEMP_ROAD_CODE_LIST.format(
+        timesign='', osm_id=short_line_id, code_list=road_code_list))
+    CONN.commit()
+
+def insert_each_point_code_list(point_location, type, road_code_list):
     global CONN
     global TIME_SIGN
 
