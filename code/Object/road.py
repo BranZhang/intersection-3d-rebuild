@@ -36,3 +36,10 @@ class Road(object):
 
     def add_hight_score(self):
         self.hight_score = self.hight_score + 1
+
+    def is_line_id_in_line_list(self, line_id):
+        for line in self.short_line_list:
+            if line_id == line.database_id:
+                return True
+        
+        return False

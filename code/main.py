@@ -30,7 +30,7 @@ def main():
     # points data must be checked on QGIS.
 
     # get CROSS type point
-    cross_points = dbmanager.query_main_road_intersection_points()
+    cross_points = get_each_road_cross_points(complete_road_string_data)
 
     # get TOUCH type point
     touch_points = get_each_road_touch_points(complete_road_string_data)
@@ -40,6 +40,7 @@ def main():
         complete_road_string_data, touch_points)
 
     # check points
+    insert_type_points_to_database(cross_points, touch_points, end_points)
 
     # calculate each point's height.
 
@@ -141,6 +142,22 @@ def update_road_code_to_database(complete_road_string_data):
         dbmanager.update_temp_road_code_list(id, road_code_dict[id])
 
 
+def get_each_road_cross_points(complete_road_string_data):
+    intersection_points = dbmanager.query_main_road_intersection_points()
+    cross_point_list = {}
+
+    for point in intersection_points:
+        for line_id in intersection_points[point]:
+            cross_point_list[(point, line_id)] = []
+
+    for k in cross_point_list:
+        for road in complete_road_string_data:
+            if road.is_line_id_in_line_list(k[1]):
+                cross_point_list[k].append(road.road_id)
+
+    return cross_point_list
+
+
 def get_each_road_touch_points(complete_road_string_data):
     touch_points = {}
     for road in complete_road_string_data:
@@ -148,9 +165,10 @@ def get_each_road_touch_points(complete_road_string_data):
             road.road_id)
         for point in single_road_touch_point:
             if touch_points.has_key(point):
-                touch_points[point].append(road.road_id)
+                touch_points[point][1].append(str(road.road_id))
             else:
-                touch_points[point] = [road.road_id]
+                touch_points[point] = (
+                    single_road_touch_point[point], [str(road.road_id)])
 
     # touch_points_list = []
 
@@ -168,12 +186,51 @@ def get_each_road_end_points(complete_road_string_data, touch_points):
 
         for point in single_road_end_points:
             if touch_points.has_key(point.get_location()) and \
-                (road.road_id not in touch_points[point.get_location()]):
-                touch_points[point.get_location()].append(road.road_id)
+                    (road.road_id not in touch_points[point.get_location()]):
+                touch_points[point.get_location()][1].append(str(road.road_id))
             else:
-                end_points[point.get_location()] = road.road_id
+                end_points[point.get_location()] = (
+                    point.parent_line_id, [str(road.road_id)])
 
     return end_points
+
+
+def insert_type_points_to_database(cross_points, touch_points, end_points):
+    insert_list = []
+
+    insert_data = "(ST_GeomFromText('POINT({longitude} {latitude})', 3857), ARRAY [{road_list}], ARRAY [{line_list}], '{point_type}')"
+
+    for (location, line_id) in cross_points:
+        road_id_list = cross_points[(location, line_id)]
+        insert_list.append(insert_data.format(
+            longitude=location[0], latitude=location[1], point_type='cross',
+            road_list=turn_list_to_sql_array(road_id_list),
+            line_list=turn_list_to_sql_array(line_id)))
+
+    for (lon, lat) in touch_points:
+        line_id_list = touch_points[(lon, lat)][0]
+        road_id_list = touch_points[(lon, lat)][1]
+        insert_list.append(insert_data.format(
+            longitude=lon, latitude=lat, point_type='touch',
+            road_list=turn_list_to_sql_array(road_id_list),
+            line_list=turn_list_to_sql_array(line_id_list)))
+
+    for (lon, lat) in end_points:
+        line_id_list = end_points[(lon, lat)][0]
+        road_id_list = end_points[(lon, lat)][1]
+        insert_list.append(insert_data.format(
+            longitude=lon, latitude=lat, point_type='end',
+            road_list=turn_list_to_sql_array(road_id_list),
+            line_list=turn_list_to_sql_array(line_id_list)))
+
+    dbmanager.insert_each_point_code_list(','.join(insert_list))
+
+
+def turn_list_to_sql_array(_list):
+    if isinstance(_list, list):
+        return "'" + "','".join(_list) + "'"
+    else:
+        return "'" + str(_list) + "'"
 
 
 if __name__ == '__main__':

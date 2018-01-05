@@ -14,3 +14,6 @@ class IntersectionPoint(object):
         self.parent_line_ids = []
         self.parent_line_ids.append(self.base_data['first_way_id'])
         self.parent_line_ids.append(self.base_data['second_way_id'])
+
+    def get_location(self):
+        return (self.longitude, self.latitude)

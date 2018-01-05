@@ -131,7 +131,12 @@ def query_main_road_intersection_points():
     for row in cur:
         result.append(IntersectionPoint(row))
 
-    return result
+    cross_point_list = {}
+
+    for point in result:
+        cross_point_list[point.get_location()] = point.parent_line_ids
+
+    return cross_point_list
 
 
 def query_main_road_touch_points(road_id):
@@ -139,11 +144,15 @@ def query_main_road_touch_points(road_id):
     global TIME_SIGN
 
     cur = CONN.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute(config.QUERY_SINGLE_ROAD_TOUCH_POINTS.format(timesign='', road_id=road_id))
-    result = []
+    cur.execute(config.QUERY_SINGLE_ROAD_TOUCH_POINTS.format(
+        timesign='', road_id=road_id))
+    result = {}
 
     for row in cur:
-        result.append((row['x'], row['y']))
+        if result.has_key((row['x'], row['y'])):
+            result[(row['x'], row['y'])].append(str(row['osm_id']))
+        else:
+            result[(row['x'], row['y'])] = [str(row['osm_id'])]
 
     return result
 
@@ -153,12 +162,13 @@ def query_main_road_end_points(road_id):
     global TIME_SIGN
 
     cur = CONN.cursor()
-    cur.execute(config.QUERY_SINGLE_ROAD_END_POINTS.format(timesign='', road_id=road_id))
+    cur.execute(config.QUERY_SINGLE_ROAD_END_POINTS.format(
+        timesign='', road_id=road_id))
     result = []
 
     for row in cur:
-        result.append(EndPoint(row[0]))
-        result.append(EndPoint(row[1]))
+        result.append(EndPoint(row[0], row[1]))
+        result.append(EndPoint(row[2], row[3]))
 
     return result
 
@@ -190,11 +200,13 @@ def update_temp_road_code_list(short_line_id, road_code_list):
         timesign='', osm_id=short_line_id, code_list=road_code_list))
     CONN.commit()
 
-def insert_each_point_code_list(point_location, type, road_code_list):
+
+def insert_each_point_code_list(insert_data):
     global CONN
     global TIME_SIGN
 
     cur = CONN.cursor()
-    cur.execute(config.UPDATE_TEMP_ROAD_CODE_LIST.format(
-        timesign='', osm_id=short_line_id, code_list=road_code_list))
+    cur.execute(config.INSERT_TYPE_POINTS.format(
+        timesign='',
+        insert_data=insert_data))
     CONN.commit()
