@@ -1,6 +1,7 @@
 '''
 main process.
 '''
+
 import config
 import dbmanager
 import Object.gistools as gistools
@@ -33,7 +34,8 @@ def main():
     cross_points = get_each_road_cross_points(complete_road_string_data)
 
     # get TOUCH type point
-    touch_points = get_each_road_touch_points(complete_road_string_data)
+    touch_points = get_each_road_touch_points(
+        complete_road_string_data, cross_points)
 
     # get END type point
     end_points = get_each_road_end_points(
@@ -42,7 +44,10 @@ def main():
     # check points
     insert_type_points_to_database(cross_points, touch_points, end_points)
 
+    # get distance between two points
+
     # calculate each point's height.
+    calculate(original_road_string_data, cross_points, touch_points, end_points)
 
     # interpolate each complete road.
 
@@ -158,12 +163,18 @@ def get_each_road_cross_points(complete_road_string_data):
     return cross_point_list
 
 
-def get_each_road_touch_points(complete_road_string_data):
+def get_each_road_touch_points(complete_road_string_data, cross_points):
+    cross_points_list = []
+    for point in cross_points:
+        cross_points_list.append(point[0])
+
     touch_points = {}
     for road in complete_road_string_data:
         single_road_touch_point = dbmanager.query_main_road_touch_points(
             road.road_id)
         for point in single_road_touch_point:
+            if point in cross_points_list:
+                continue
             if touch_points.has_key(point):
                 touch_points[point][1].append(str(road.road_id))
             else:
@@ -188,6 +199,8 @@ def get_each_road_end_points(complete_road_string_data, touch_points):
             if touch_points.has_key(point.get_location()) and \
                     (road.road_id not in touch_points[point.get_location()]):
                 touch_points[point.get_location()][1].append(str(road.road_id))
+            elif end_points.has_key(point.get_location()):
+                end_points[point.get_location()][1].append(str(road.road_id))
             else:
                 end_points[point.get_location()] = (
                     point.parent_line_id, [str(road.road_id)])
@@ -198,7 +211,8 @@ def get_each_road_end_points(complete_road_string_data, touch_points):
 def insert_type_points_to_database(cross_points, touch_points, end_points):
     insert_list = []
 
-    insert_data = "(ST_GeomFromText('POINT({longitude} {latitude})', 3857), ARRAY [{road_list}], ARRAY [{line_list}], '{point_type}')"
+    insert_data = ("(ST_GeomFromText('POINT({longitude} {latitude})', 3857), "
+                   "ARRAY [{road_list}], ARRAY [{line_list}], '{point_type}')")
 
     for (location, line_id) in cross_points:
         road_id_list = cross_points[(location, line_id)]
@@ -231,6 +245,13 @@ def turn_list_to_sql_array(_list):
         return "'" + "','".join(_list) + "'"
     else:
         return "'" + str(_list) + "'"
+
+
+def calculate(original_road_string_data, cross_points, touch_points, end_points):
+    cp_list = []
+
+    prob = LpProblem("intersection node height", LpMinimize)
+
 
 
 if __name__ == '__main__':

@@ -31,7 +31,7 @@ def connect_to_database():
             password=config.POSTGREDB["password"],
             host=config.POSTGREDB["host"])
     except psycopg2.Error as exception:
-        print exception.pgerror
+        print(exception.pgerror)
 
     if CONN:
         return True
