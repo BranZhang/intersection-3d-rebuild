@@ -149,7 +149,7 @@ def query_main_road_touch_points(road_id):
     result = {}
 
     for row in cur:
-        if result.has_key((row['x'], row['y'])):
+        if (row['x'], row['y']) in result.keys():
             result[(row['x'], row['y'])].append(str(row['osm_id']))
         else:
             result[(row['x'], row['y'])] = [str(row['osm_id'])]
@@ -210,3 +210,22 @@ def insert_each_point_code_list(insert_data):
         timesign='',
         insert_data=insert_data))
     CONN.commit()
+
+
+def get_distance_of_a_road(road_id):
+    global CONN
+    global TIME_SIGN
+
+    cur = CONN.cursor()
+    cur.execute(config.GET_DISTANCE_OF_A_ROAD.format(
+        timesign='',
+        road_id=road_id))
+
+    result = {}
+    for row in cur:
+        result[((row[0], row[1]),
+                (row[2], row[3]))] = row[4]
+        # result[((row['start_x'], row['start_y']),
+        #         (row['end_x'], row['end_y']))] = row['length']
+
+    return result

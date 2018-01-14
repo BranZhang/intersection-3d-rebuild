@@ -2,6 +2,8 @@
 main process.
 '''
 
+from ortools.linear_solver import linear_solver_pb2, pywraplp
+
 import config
 import dbmanager
 import Object.gistools as gistools
@@ -45,9 +47,11 @@ def main():
     insert_type_points_to_database(cross_points, touch_points, end_points)
 
     # get distance between two points
+    roads_distance_map = calculate_roads_distance(complete_road_string_data)
 
     # calculate each point's height.
-    calculate(original_road_string_data, cross_points, touch_points, end_points)
+    calculate(original_road_string_data, roads_distance_map,
+              cross_points, touch_points, end_points)
 
     # interpolate each complete road.
 
@@ -66,8 +70,8 @@ def get_complete_road_string_list(original_road_string_data):
     result = []
     already_deal_roads_id_list = []
 
-    for (id, single_string) in original_road_string_data.items():
-        if id in already_deal_roads_id_list:
+    for (road_id, single_string) in original_road_string_data.items():
+        if road_id in already_deal_roads_id_list:
             continue
 
         single_road = []
@@ -101,7 +105,7 @@ def get_complete_road_string_list(original_road_string_data):
                 already_deal_roads_id_list.append(temp.base_data['osm_id'])
 
     if len(already_deal_roads_id_list) != len(original_road_string_data):
-        print 'bad deal.'
+        print('bad deal.')
 
     result.sort(key=lambda r: r.distance, reverse=True)
     return result
@@ -120,7 +124,7 @@ def get_next_single_road_string(current_string, original_road_string_data):
     if len(target_dict) == 0:
         return None
 
-    for single_string in sorted(target_dict.iteritems(), key=lambda x: 180 - x[1]):
+    for single_string in sorted(target_dict.items(), key=lambda x: 180 - x[1]):
         if single_string[1] < 90:
             return None
         else:
@@ -134,7 +138,7 @@ def update_road_code_to_database(complete_road_string_data):
 
     for road in complete_road_string_data:
         for single_string in road.short_line_list:
-            if road_code_dict.has_key(single_string.database_id):
+            if single_string.database_id in road_code_dict.keys():
                 road_code_dict[single_string.database_id] = road_code_dict[single_string.database_id] + \
                     "[A%s]" % (road_count)
             else:
@@ -175,7 +179,7 @@ def get_each_road_touch_points(complete_road_string_data, cross_points):
         for point in single_road_touch_point:
             if point in cross_points_list:
                 continue
-            if touch_points.has_key(point):
+            if point in touch_points.keys():
                 touch_points[point][1].append(str(road.road_id))
             else:
                 touch_points[point] = (
@@ -196,10 +200,10 @@ def get_each_road_end_points(complete_road_string_data, touch_points):
             road.road_id)
 
         for point in single_road_end_points:
-            if touch_points.has_key(point.get_location()) and \
+            if point.get_location() in touch_points.keys() and \
                     (road.road_id not in touch_points[point.get_location()]):
                 touch_points[point.get_location()][1].append(str(road.road_id))
-            elif end_points.has_key(point.get_location()):
+            elif point.get_location() in end_points.keys():
                 end_points[point.get_location()][1].append(str(road.road_id))
             else:
                 end_points[point.get_location()] = (
@@ -247,11 +251,72 @@ def turn_list_to_sql_array(_list):
         return "'" + str(_list) + "'"
 
 
-def calculate(original_road_string_data, cross_points, touch_points, end_points):
-    cp_list = []
+def calculate_roads_distance(complete_road_string_data):
+    roads_distance_map = {}
+    for road in complete_road_string_data:
+        roads_distance_map.update(
+            dbmanager.get_distance_of_a_road(road.road_id))
 
-    prob = LpProblem("intersection node height", LpMinimize)
+    return roads_distance_map
 
+
+def calculate(original_road_string_data, roads_distance_map, cross_points, touch_points, end_points):
+    '''
+    max slope: 6%.
+    each floor:3 metre
+    '''
+    elevation_difference = 3
+    slope = 0.06
+
+    solver = pywraplp.Solver(
+        'road_3D', pywraplp.Solver.GLOP_LINEAR_PROGRAMMING)
+    objective = solver.Objective()
+    objective.SetMinimization()
+
+    cp_list = []  # cross_points
+    tp_list = []  # touch_points
+    ep_list = []  # end_points
+
+    for _n in range(0, len(cross_points)):
+        cp_list.append(solver.NumVar(-elevation_difference, solver.infinity(),
+                                     'cp_{id:02d}'.format(id=_n)))
+        objective.SetCoefficient(cp_list[_n], 1)
+
+    for _n in range(0, len(touch_points)):
+        tp_list.append(solver.NumVar(-elevation_difference, solver.infinity(),
+                                     'tp_{id:02d}'.format(id=_n)))
+        objective.SetCoefficient(tp_list[_n], 1)
+
+    for _n in range(0, len(end_points)):
+        ep_list.append(solver.NumVar(-elevation_difference, solver.infinity(),
+                                     'ep_{id:02d}'.format(id=_n)))
+        objective.SetCoefficient(ep_list[_n], 1)
+
+    # Constraint series 1: P(high) - P(low) >= 3
+    for _n in range(0, len(cross_points), 2):
+        if original_road_string_data[list(cross_points.items())[_n][0][1]].z_order \
+            > original_road_string_data[list(cross_points.items())[_n + 1][0][1]].z_order:
+            param = 1
+        else:
+            param = -1
+        constraint1 = solver.Constraint(elevation_difference, solver.infinity())
+        constraint1.SetCoefficient(cp_list[_n], param)
+        constraint1.SetCoefficient(cp_list[_n + 1], -param)
+
+    # Constraint series 2: Is bridge?
+    # todo
+
+    # Constraint series 3: ABS(P(i) - P(i+1)) <= slope * length
+    # todo
+
+    # Solve the system.
+    solver.Solve()
+    # opt_solution = 3 * cp_list[0].solution_value() + \
+    #     4 * cp_list[0].solution_value()
+    # print('Solution:')
+    # print('x = ', x.solution_value())
+    # print('y = ', y.solution_value())
+    # print('Optimal objective value =', opt_solution)
 
 
 if __name__ == '__main__':

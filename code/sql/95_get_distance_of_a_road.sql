@@ -18,7 +18,9 @@ WITH road AS (
     FROM road, other_roads_collection
 )
 SELECT DISTINCT ON (split_string.short_line)
-  ST_AsGeoJSON(ST_StartPoint(split_string.short_line)),
-  ST_AsGeoJSON(ST_EndPoint(split_string.short_line)),
-  ST_Length(split_string.short_line)
+  ST_X(ST_StartPoint(split_string.short_line)) AS start_x,
+  ST_Y(ST_StartPoint(split_string.short_line)) AS start_y,
+  ST_X(ST_EndPoint(split_string.short_line)) AS end_x,
+  ST_Y(ST_EndPoint(split_string.short_line)) AS end_y,
+  ST_Length(split_string.short_line) AS length
 FROM split_string;

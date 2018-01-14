@@ -15,9 +15,10 @@ SQL_FILE = {"create_insert_intersection_points_table":
             "query_main_road_intersection_points":"\\sql\\08-query_main_road_intersection_points.sql",
             "create_final_roads_table": "\\sql\\09-create_final_roads_table.sql",
             "insert_final_roads_data_to_table": "\\sql\\10-insert_final_roads_data_to_table.sql",
+            "get_distance_of_a_road": "\\sql\\95_get_distance_of_a_road.sql",
+            "insert_type_points": "\\sql\\96_insert_type_points.sql",
             "query_single_road_end_points": "\\sql\\97_query_single_road_end_points.sql",
             "query_single_road_touch_points": "\\sql\\98_query_single_road_touch_points.sql",
-            "insert_type_points": "\\sql\\96_insert_type_points.sql",
             "update_temp_road_code_list": "\\sql\\99_update_temp_road_code_list.sql"}
 
 CREATE_INSERT_INTERSECTION_POINTS_TABLE = ""
@@ -48,6 +49,8 @@ UPDATE_TEMP_ROAD_CODE_LIST = ""
 
 INSERT_TYPE_POINTS = ""
 
+GET_DISTANCE_OF_A_ROAD = ""
+
 POSTGREDB = {
     "database":"shanghai_test_data",
     "user":"postgres",
@@ -74,6 +77,7 @@ def init_config():
     global INSERT_FINAL_ROADS_DATA_TO_TABLE
     global UPDATE_TEMP_ROAD_CODE_LIST
     global INSERT_TYPE_POINTS
+    global GET_DISTANCE_OF_A_ROAD
 
     CREATE_INSERT_INTERSECTION_POINTS_TABLE = read_file(
         sys.path[0] + SQL_FILE["create_insert_intersection_points_table"])
@@ -103,6 +107,10 @@ def init_config():
         sys.path[0] + SQL_FILE["update_temp_road_code_list"])
     INSERT_TYPE_POINTS = read_file(
         sys.path[0] + SQL_FILE["insert_type_points"])
+
+    GET_DISTANCE_OF_A_ROAD = read_file(
+        sys.path[0] + SQL_FILE["get_distance_of_a_road"])
+
 
 def read_file(filepath):
     '''
