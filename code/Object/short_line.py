@@ -15,6 +15,7 @@ class ShortLine(object):
         self.geo_data = geojson.loads(self.base_data["st_asgeojson"])
         self.database_id = self.base_data['osm_id']
         self.z_order = self.base_data['z_order']
+        self.bridge = self.base_data['bridge'] == 'yes'
         self.point_list = []
 
         for p in self.geo_data["coordinates"]:

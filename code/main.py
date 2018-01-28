@@ -2,6 +2,8 @@
 main process.
 '''
 
+import collections
+
 from ortools.linear_solver import linear_solver_pb2, pywraplp
 
 import config
@@ -49,9 +51,11 @@ def main():
     # get distance between two points
     roads_distance_map = calculate_roads_distance(complete_road_string_data)
 
+    type_points_dict_by_road_id = dict_by_road_id(complete_road_string_data, cross_points, touch_points, end_points)
+
     # calculate each point's height.
-    calculate(original_road_string_data, roads_distance_map,
-              cross_points, touch_points, end_points)
+    calculate(original_road_string_data, type_points_dict_by_road_id,
+              roads_distance_map, cross_points, touch_points, end_points)
 
     # interpolate each complete road.
 
@@ -153,7 +157,7 @@ def update_road_code_to_database(complete_road_string_data):
 
 def get_each_road_cross_points(complete_road_string_data):
     intersection_points = dbmanager.query_main_road_intersection_points()
-    cross_point_list = {}
+    cross_point_list = collections.OrderedDict()
 
     for point in intersection_points:
         for line_id in intersection_points[point]:
@@ -260,7 +264,29 @@ def calculate_roads_distance(complete_road_string_data):
     return roads_distance_map
 
 
-def calculate(original_road_string_data, roads_distance_map, cross_points, touch_points, end_points):
+def dict_by_road_id(complete_road_string_data, cross_points, touch_points, end_points):
+    type_points_dict_by_road_id = {}
+
+    for road in complete_road_string_data:
+        type_points_dict_by_road_id[road.road_id] = []
+
+    for point in cross_points:
+        for road_id in cross_points[point]:
+            type_points_dict_by_road_id[road_id].append(('cp',point, point[0]))
+
+    for point in touch_points:
+        for road_id in touch_points[point][1]:
+            type_points_dict_by_road_id[road_id].append(('tp',point))
+
+    for point in end_points:
+        for road_id in end_points[point][1]:
+            type_points_dict_by_road_id[road_id].append(('ep',point))
+
+    return type_points_dict_by_road_id
+
+
+
+def calculate(original_road_string_data, type_points_dict_by_road_id, roads_distance_map, cross_points, touch_points, end_points):
     '''
     max slope: 6%.
     each floor:3 metre
@@ -278,42 +304,80 @@ def calculate(original_road_string_data, roads_distance_map, cross_points, touch
     ep_list = []  # end_points
 
     for _n in range(0, len(cross_points)):
-        cp_list.append(solver.NumVar(-elevation_difference, solver.infinity(),
+        cp_list.append(solver.NumVar(0, solver.infinity(),
                                      'cp_{id:02d}'.format(id=_n)))
         objective.SetCoefficient(cp_list[_n], 1)
 
     for _n in range(0, len(touch_points)):
-        tp_list.append(solver.NumVar(-elevation_difference, solver.infinity(),
+        tp_list.append(solver.NumVar(0, solver.infinity(),
                                      'tp_{id:02d}'.format(id=_n)))
         objective.SetCoefficient(tp_list[_n], 1)
 
     for _n in range(0, len(end_points)):
-        ep_list.append(solver.NumVar(-elevation_difference, solver.infinity(),
+        ep_list.append(solver.NumVar(0, solver.infinity(),
                                      'ep_{id:02d}'.format(id=_n)))
         objective.SetCoefficient(ep_list[_n], 1)
 
     # Constraint series 1: P(high) - P(low) >= 3
     for _n in range(0, len(cross_points), 2):
         if original_road_string_data[list(cross_points.items())[_n][0][1]].z_order \
-            > original_road_string_data[list(cross_points.items())[_n + 1][0][1]].z_order:
+                > original_road_string_data[list(cross_points.items())[_n + 1][0][1]].z_order:
             param = 1
         else:
             param = -1
-        constraint1 = solver.Constraint(elevation_difference, solver.infinity())
+        constraint1 = solver.Constraint(
+            elevation_difference, solver.infinity())
         constraint1.SetCoefficient(cp_list[_n], param)
         constraint1.SetCoefficient(cp_list[_n + 1], -param)
 
     # Constraint series 2: Is bridge?
-    # todo
+    for _n in range(0, len(cross_points)):
+        if original_road_string_data[list(cross_points.items())[_n][0][1]].bridge:
+            constraint2 = solver.Constraint(
+                elevation_difference, solver.infinity())
+            constraint2.SetCoefficient(cp_list[_n], 1)
+
+    for _n in range(0, len(touch_points)):
+        if original_road_string_data[int(list(touch_points.items())[_n][1][0][0])].bridge:
+            constraint2 = solver.Constraint(
+                elevation_difference, solver.infinity())
+            constraint2.SetCoefficient(tp_list[_n], 1)
+
+    for _n in range(0, len(end_points)):
+        if original_road_string_data[list(end_points.items())[_n][1][0]].bridge:
+            constraint2 = solver.Constraint(
+                elevation_difference, solver.infinity())
+            constraint2.SetCoefficient(ep_list[_n], 1)
 
     # Constraint series 3: ABS(P(i) - P(i+1)) <= slope * length
-    # todo
+    for road_id in type_points_dict_by_road_id:
+        point_couples = [((m[-1], n[-1]), m, n) for m in type_points_dict_by_road_id[road_id] for n in type_points_dict_by_road_id[road_id]]
+        for point_couple in point_couples:
+            if point_couple[0] in roads_distance_map:
+                if point_couple[1][0] == 'cp':
+                    m = cp_list[list(cross_points.keys()).index(point_couple[1][1])]
+                elif point_couple[1][0] == 'tp':
+                    m = tp_list[list(touch_points.keys()).index(point_couple[1][1])]
+                elif point_couple[1][0] == 'ep':
+                    m = ep_list[list(end_points.keys()).index(point_couple[1][1])]
+
+                if point_couple[2][0] == 'cp':
+                    n = cp_list[list(cross_points.keys()).index(point_couple[2][1])]
+                elif point_couple[2][0] == 'tp':
+                    n = tp_list[list(touch_points.keys()).index(point_couple[2][1])]
+                elif point_couple[2][0] == 'ep':
+                    n = ep_list[list(end_points.keys()).index(point_couple[2][1])]
+
+                distance = roads_distance_map[point_couple[0]]
+                constraint3 = solver.Constraint(-distance * slope, distance * slope)
+                constraint3.SetCoefficient(m, 1)
+                constraint3.SetCoefficient(n, -1)
 
     # Solve the system.
     solver.Solve()
     # opt_solution = 3 * cp_list[0].solution_value() + \
     #     4 * cp_list[0].solution_value()
-    # print('Solution:')
+    print('Solution:')
     # print('x = ', x.solution_value())
     # print('y = ', y.solution_value())
     # print('Optimal objective value =', opt_solution)

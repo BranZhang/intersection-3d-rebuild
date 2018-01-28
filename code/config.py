@@ -4,22 +4,22 @@ configuration parameters
 import sys
 
 SQL_FILE = {"create_insert_intersection_points_table":
-            "\\sql\\01-create_insert_intersection_points_table.sql",
-            "query_intersection_points": "\\sql\\02-query_intersection_points.sql",
-            "create_insert_key_locations_table": "\\sql\\03-create_insert_key_locations_table.sql",
-            "query_key_locations": "\\sql\\04-query_key_locations.sql",
-            "create_temp_roads_table": "\\sql\\05-create_temp_roads_table.sql",
+            "/sql/01-create_insert_intersection_points_table.sql",
+            "query_intersection_points": "/sql/02-query_intersection_points.sql",
+            "create_insert_key_locations_table": "/sql/03-create_insert_key_locations_table.sql",
+            "query_key_locations": "/sql/04-query_key_locations.sql",
+            "create_temp_roads_table": "/sql/05-create_temp_roads_table.sql",
             "insert_target_data_to_temp_roads_table":
-            "\\sql\\06-insert_target_data_to_temp_roads_table.sql",
-            "query_temp_roads":"\\sql\\07-query_temp_roads.sql",
-            "query_main_road_intersection_points":"\\sql\\08-query_main_road_intersection_points.sql",
-            "create_final_roads_table": "\\sql\\09-create_final_roads_table.sql",
-            "insert_final_roads_data_to_table": "\\sql\\10-insert_final_roads_data_to_table.sql",
-            "get_distance_of_a_road": "\\sql\\95_get_distance_of_a_road.sql",
-            "insert_type_points": "\\sql\\96_insert_type_points.sql",
-            "query_single_road_end_points": "\\sql\\97_query_single_road_end_points.sql",
-            "query_single_road_touch_points": "\\sql\\98_query_single_road_touch_points.sql",
-            "update_temp_road_code_list": "\\sql\\99_update_temp_road_code_list.sql"}
+            "/sql/06-insert_target_data_to_temp_roads_table.sql",
+            "query_temp_roads":"/sql/07-query_temp_roads.sql",
+            "query_main_road_intersection_points":"/sql/08-query_main_road_intersection_points.sql",
+            "create_final_roads_table": "/sql/09-create_final_roads_table.sql",
+            "insert_final_roads_data_to_table": "/sql/10-insert_final_roads_data_to_table.sql",
+            "get_distance_of_a_road": "/sql/95_get_distance_of_a_road.sql",
+            "insert_type_points": "/sql/96_insert_type_points.sql",
+            "query_single_road_end_points": "/sql/97_query_single_road_end_points.sql",
+            "query_single_road_touch_points": "/sql/98_query_single_road_touch_points.sql",
+            "update_temp_road_code_list": "/sql/99_update_temp_road_code_list.sql"}
 
 CREATE_INSERT_INTERSECTION_POINTS_TABLE = ""
 
