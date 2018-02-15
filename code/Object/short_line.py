@@ -53,3 +53,6 @@ class ShortLine(object):
             return "end"
         else:
             return ""
+
+# 将线性规划得到的有高度值的点与当前直线的点混合在一起。
+    

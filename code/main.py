@@ -382,6 +382,9 @@ def calculate(original_road_string_data, type_points_dict_by_road_id, roads_dist
     # print('y = ', y.solution_value())
     # print('Optimal objective value =', opt_solution)
 
+    # 将线性规划得到的带高度的点与 short_line （也就是 original_road_string_data）融合起来，
+    # 融合需要借助postgis。做高度上的插值，插值后输出到kml。
+
 
 if __name__ == '__main__':
     main()

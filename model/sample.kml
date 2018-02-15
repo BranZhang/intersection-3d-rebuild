@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+	<Document>
+			<Style id="blueLine">
+				<LineStyle>
+				<color>FFF00014</color>
+				<width>5.0</width>
+				</LineStyle>
+			</Style>
+			<Style id="redLine">
+				<LineStyle>
+				<color>FF0000FF</color>
+				<width>9.0</width>
+				</LineStyle>
+			</Style>
+		<Folder>
+			<name>Dennis_chen_canada</name>
+			<Placemark>
+				<name>testing-Placemark-1</name>
+				<styleUrl>#redLine</styleUrl>
+				<LineString>
+				<extrude>true</extrude>
+				<altitudeMode>absolute</altitudeMode>
+				<coordinates>-114.098274,51.149258,35871 -114.0883,51.13928,36032 -114.07823,51.129253,35946 -114.068275,51.11926,35892 -114.19827,51.179256,1552</coordinates>
+				</LineString>
+			</Placemark>
+			<Placemark>
+				<name>testing-Placemark-2</name>
+				<styleUrl>#blueLine</styleUrl>
+				<LineString>
+				<extrude>false</extrude>
+				<altitudeMode>absolute</altitudeMode>
+				<coordinates>-114.19827,51.179256,1552 -114.02826,52.179283,4444 -114.028275,52.079296,5555 -114.02826,51.979294,66666 -114.02825,51.8793,77770 -114.02826,51.77927,80000 -114.02827,51.67928,90000 -114.02828,51.57928,80000 -114.02828,51.47929,77777 -114.02828,51.379276,60000 -114.02828,51.27927,50000 -114.02828,51.179276,40000 -114.02829,51.00929,30000</coordinates>
+				</LineString>
+			</Placemark>
+		</Folder>
+	</Document>
+ </kml>
