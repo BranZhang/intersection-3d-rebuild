@@ -34,7 +34,6 @@ def connect_to_database():
         print(exception.pgerror)
         return False
 
-
     return True
 
 
@@ -228,3 +227,6 @@ def get_distance_of_a_road(road_id):
         #         (row['end_x'], row['end_y']))] = row['length']
 
     return result
+
+
+# def get_merged_road():

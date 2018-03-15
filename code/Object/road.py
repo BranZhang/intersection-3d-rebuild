@@ -3,6 +3,7 @@ todo
 '''
 from Object.gistools import get_distance
 
+
 class Road(object):
     '''
     road of several short lines
@@ -41,5 +42,5 @@ class Road(object):
         for line in self.short_line_list:
             if line_id == line.database_id:
                 return True
-        
+
         return False

@@ -51,17 +51,19 @@ def main():
     # get distance between two points
     roads_distance_map = calculate_roads_distance(complete_road_string_data)
 
-    type_points_dict_by_road_id = dict_by_road_id(complete_road_string_data, cross_points, touch_points, end_points)
+    type_points_dict_by_road_id = dict_by_road_id(
+        complete_road_string_data, cross_points, touch_points, end_points)
 
     # calculate each point's height.
-    calculate(original_road_string_data, type_points_dict_by_road_id,
-              roads_distance_map, cross_points, touch_points, end_points)
+    key_points_z_value = calculate(original_road_string_data, type_points_dict_by_road_id,
+                                   roads_distance_map, cross_points, touch_points, end_points)
 
     # interpolate each complete road.
 
     # smooth each complete road in its z axis.
+    smooth_z_axis(complete_road_string_data, key_points_z_value)
 
-    # save road data with z value to database.
+    # save road data with z value to database or file.
 
     # disconnect to database.
     dbmanager.disconnect_to_database()
@@ -272,18 +274,18 @@ def dict_by_road_id(complete_road_string_data, cross_points, touch_points, end_p
 
     for point in cross_points:
         for road_id in cross_points[point]:
-            type_points_dict_by_road_id[road_id].append(('cp',point, point[0]))
+            type_points_dict_by_road_id[road_id].append(
+                ('cp', point, point[0]))
 
     for point in touch_points:
         for road_id in touch_points[point][1]:
-            type_points_dict_by_road_id[road_id].append(('tp',point))
+            type_points_dict_by_road_id[road_id].append(('tp', point))
 
     for point in end_points:
         for road_id in end_points[point][1]:
-            type_points_dict_by_road_id[road_id].append(('ep',point))
+            type_points_dict_by_road_id[road_id].append(('ep', point))
 
     return type_points_dict_by_road_id
-
 
 
 def calculate(original_road_string_data, type_points_dict_by_road_id, roads_distance_map, cross_points, touch_points, end_points):
@@ -351,39 +353,67 @@ def calculate(original_road_string_data, type_points_dict_by_road_id, roads_dist
 
     # Constraint series 3: ABS(P(i) - P(i+1)) <= slope * length
     for road_id in type_points_dict_by_road_id:
-        point_couples = [((m[-1], n[-1]), m, n) for m in type_points_dict_by_road_id[road_id] for n in type_points_dict_by_road_id[road_id]]
+        point_couples = [((m[-1], n[-1]), m, n) for m in type_points_dict_by_road_id[road_id]
+                         for n in type_points_dict_by_road_id[road_id]]
         for point_couple in point_couples:
             if point_couple[0] in roads_distance_map:
                 if point_couple[1][0] == 'cp':
-                    m = cp_list[list(cross_points.keys()).index(point_couple[1][1])]
+                    m = cp_list[list(cross_points.keys()).index(
+                        point_couple[1][1])]
                 elif point_couple[1][0] == 'tp':
-                    m = tp_list[list(touch_points.keys()).index(point_couple[1][1])]
+                    m = tp_list[list(touch_points.keys()).index(
+                        point_couple[1][1])]
                 elif point_couple[1][0] == 'ep':
-                    m = ep_list[list(end_points.keys()).index(point_couple[1][1])]
+                    m = ep_list[list(end_points.keys()).index(
+                        point_couple[1][1])]
 
                 if point_couple[2][0] == 'cp':
-                    n = cp_list[list(cross_points.keys()).index(point_couple[2][1])]
+                    n = cp_list[list(cross_points.keys()).index(
+                        point_couple[2][1])]
                 elif point_couple[2][0] == 'tp':
-                    n = tp_list[list(touch_points.keys()).index(point_couple[2][1])]
+                    n = tp_list[list(touch_points.keys()).index(
+                        point_couple[2][1])]
                 elif point_couple[2][0] == 'ep':
-                    n = ep_list[list(end_points.keys()).index(point_couple[2][1])]
+                    n = ep_list[list(end_points.keys()).index(
+                        point_couple[2][1])]
 
                 distance = roads_distance_map[point_couple[0]]
-                constraint3 = solver.Constraint(-distance * slope, distance * slope)
+                constraint3 = solver.Constraint(-distance *
+                                                slope, distance * slope)
                 constraint3.SetCoefficient(m, 1)
                 constraint3.SetCoefficient(n, -1)
 
-    # Solve the system.
     solver.Solve()
-    # opt_solution = 3 * cp_list[0].solution_value() + \
-    #     4 * cp_list[0].solution_value()
-    print('Solution:')
-    # print('x = ', x.solution_value())
-    # print('y = ', y.solution_value())
-    # print('Optimal objective value =', opt_solution)
+
+    solver_answer = {}
+    for _n in range(len(cross_points)):
+        for road_id in list(cross_points.items())[_n][1]:
+            if road_id not in solver_answer:
+                solver_answer[road_id] = []
+            solver_answer[road_id].append(
+                (list(cross_points.items())[_n][0][0], cp_list[_n].solution_value()))
+
+    for _n in range(len(touch_points)):
+        for road_id in list(touch_points.items())[_n][1][1]:
+            if road_id not in solver_answer:
+                solver_answer[road_id] = []
+            solver_answer[road_id].append(
+                (list(touch_points.items())[_n][0], tp_list[_n].solution_value()))
+
+    for _n in range(len(end_points)):
+        for road_id in list(end_points.items())[_n][1][1]:
+            if road_id not in solver_answer:
+                solver_answer[road_id] = []
+            solver_answer[road_id].append(
+                (list(end_points.items())[_n][0], ep_list[_n].solution_value()))
 
     # 将线性规划得到的带高度的点与 short_line （也就是 original_road_string_data）融合起来，
     # 融合需要借助postgis。做高度上的插值，插值后输出到kml。
+    return solver_answer
+
+
+def smooth_z_axis(complete_road_string_data, key_points_z_value):
+    pass
 
 
 if __name__ == '__main__':
