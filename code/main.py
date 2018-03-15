@@ -413,7 +413,11 @@ def calculate(original_road_string_data, type_points_dict_by_road_id, roads_dist
 
 
 def smooth_z_axis(complete_road_string_data, key_points_z_value):
-    pass
+    for road in complete_road_string_data:
+        if road.road_id not in key_points_z_value:
+            continue
+        points_z_value = key_points_z_value[road.road_id]
+        road.smooth_z_axis(dbmanager.get_merged_road(road.road_id), points_z_value)
 
 
 if __name__ == '__main__':

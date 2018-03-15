@@ -33,10 +33,7 @@ class Road(object):
                 self.end_point = short_line_list[len(
                     short_line_list) - 1].start_point
         self.distance = get_distance(self.start_point, self.end_point)
-        self.hight_score = 0
 
-    def add_hight_score(self):
-        self.hight_score = self.hight_score + 1
 
     def is_line_id_in_line_list(self, line_id):
         for line in self.short_line_list:
@@ -44,3 +41,6 @@ class Road(object):
                 return True
 
         return False
+
+    def smooth_z_axis(self, road_point_data, points_z_value):
+        pass

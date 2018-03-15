@@ -229,4 +229,13 @@ def get_distance_of_a_road(road_id):
     return result
 
 
-# def get_merged_road():
+def get_merged_road(road_id):
+    global CONN
+    global TIME_SIGN
+
+    cur = CONN.cursor()
+    cur.execute(config.GET_MERGED_ROAD.format(
+        timesign='',
+        road_id=road_id))
+
+    return cur.fetchone()
