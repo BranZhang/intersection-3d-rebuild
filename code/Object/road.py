@@ -1,6 +1,7 @@
 '''
 todo
 '''
+import geojson
 from Object.gistools import get_distance
 
 
@@ -43,4 +44,11 @@ class Road(object):
         return False
 
     def smooth_z_axis(self, road_point_data, points_z_value):
-        pass
+        road_point_json = geojson.loads(road_point_data)
+        points_list = []
+        for location in road_point_json['coordinates']:
+            z_value = -99
+            if (location[0], location[1]) in points_z_value:
+                z_value = points_z_value[(location[0], location[1])]
+            if (location, z_value) not in points_list:
+                points_list.append((location, z_value))

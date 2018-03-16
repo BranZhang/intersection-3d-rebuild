@@ -229,13 +229,14 @@ def get_distance_of_a_road(road_id):
     return result
 
 
-def get_merged_road(road_id):
+def get_merged_road(road_id, other_points):
     global CONN
     global TIME_SIGN
 
     cur = CONN.cursor()
     cur.execute(config.GET_MERGED_ROAD.format(
         timesign='',
-        road_id=road_id))
+        road_id=road_id,
+        other_points=','.join(["ST_GeomFromText('POINT({0} {1})', 3857)".format(p[0], p[1]) for p in other_points])))
 
-    return cur.fetchone()
+    return cur.fetchone()[0]
