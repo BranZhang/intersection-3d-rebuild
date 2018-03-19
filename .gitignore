@@ -1,3 +1,5 @@
 /.vscode/*
 *.pyc
 *.qgs
+model/test_*.xml
+model/test_*.kml
