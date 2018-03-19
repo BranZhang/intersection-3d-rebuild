@@ -2,6 +2,8 @@
 todo
 '''
 import geojson
+
+from Object.geomtry_point import GeoPoint
 from Object.gistools import get_distance
 
 
@@ -50,5 +52,25 @@ class Road(object):
             z_value = -99
             if (location[0], location[1]) in points_z_value:
                 z_value = points_z_value[(location[0], location[1])]
-            if (location, z_value) not in points_list:
-                points_list.append((location, z_value))
+            points_list.append(GeoPoint(location, z_value))
+        
+        distance_list = []
+        index_list = []
+        last_point = None
+        for i,point in enumerate(points_list):
+            if point.altitude != -99:
+                index_list.append(i)
+            if last_point:
+                distance_list.append(get_distance(point, last_point))
+            last_point = point
+
+            sum_distance = sum(distance_list)
+            if len(index_list) == 2:
+                distance_accumulate = 0
+                for m in range(index_list[0]+1, index_list[1]):
+                    distance_accumulate += distance_list[m-(index_list[0]+1)]
+                    points_list[m].altitude = points_list[index_list[0]].altitude + (points_list[index_list[1]].altitude - points_list[index_list[0]].altitude) * distance_accumulate / sum_distance
+                distance_list.clear()
+                del index_list[0]
+
+        self.points_with_z_value_list = points_list

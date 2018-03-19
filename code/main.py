@@ -11,7 +11,7 @@ import dbmanager
 import Object.gistools as gistools
 from Object.road import Road
 from Object.touch_point import TouchPoint
-
+from out import output_data_to_file
 
 def main():
     config.init_config()
@@ -64,6 +64,7 @@ def main():
     smooth_z_axis(complete_road_string_data, key_points_z_value)
 
     # save road data with z value to database or file.
+    output_data_to_file(complete_road_string_data)
 
     # disconnect to database.
     dbmanager.disconnect_to_database()
