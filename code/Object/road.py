@@ -46,6 +46,11 @@ class Road(object):
         return False
 
     def smooth_z_axis(self, road_point_data, points_z_value):
+        for short_line in self.short_line_list:
+            for point in short_line.point_list:
+                if point.altitude != -99:
+                    points_z_value[(point.longitude,point.latitude)] = point.altitude
+
         road_point_json = geojson.loads(road_point_data)
         points_list = []
         for location in road_point_json['coordinates']:
@@ -74,3 +79,5 @@ class Road(object):
                 del index_list[0]
 
         self.points_with_z_value_list = points_list
+        for short_line in self.short_line_list:
+            short_line.save_z_value(points_list)

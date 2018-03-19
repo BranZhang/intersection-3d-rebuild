@@ -54,5 +54,12 @@ class ShortLine(object):
         else:
             return ""
 
-# 将线性规划得到的有高度值的点与当前直线的点混合在一起。
+    # 将线性规划得到的有高度值的点与当前直线的点混合在一起。
+    def save_z_value(self, road_points_list):
+        for point1 in road_points_list:
+            for point2 in self.point_list:
+                if point1.equal(point2):
+                    point2.altitude = point1.altitude
+                    break
+
     
