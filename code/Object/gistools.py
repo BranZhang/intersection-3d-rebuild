@@ -2,7 +2,10 @@
 todo
 '''
 import math
+
+from geopy.distance import vincenty
 from pyproj import Proj, transform
+
 
 def get_bearing_angle(start_geo_point, end_geo_point):
     '''
@@ -34,15 +37,7 @@ def get_distance(geo_point1, geo_point2):
     point1 = turn_3857_project_to_4326(geo_point1.longitude, geo_point1.latitude)
     point2 = turn_3857_project_to_4326(geo_point2.longitude, geo_point2.latitude)
 
-    lon1, lat1, lon2, lat2 = map(
-        math.radians, [point1[0], point1[1], point2[0], point2[1]])
-
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    _a = math.sin(dlat / 2)**2 + math.cos(lat1) * \
-        math.cos(lat2) * math.sin(dlon / 2)**2
-    _c = 2 * math.asin(math.sqrt(_a))
-    return _c * 6371 * 1000
+    return vincenty(point1, point2).m
 
 
 def turn_3857_project_to_4326(longitude, latitude):

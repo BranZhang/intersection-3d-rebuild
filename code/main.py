@@ -13,6 +13,7 @@ from Object.road import Road
 from Object.touch_point import TouchPoint
 from out import output_data_to_file
 
+
 def main():
     config.init_config()
     dbmanager.connect_to_database()
@@ -391,19 +392,22 @@ def calculate(original_road_string_data, type_points_dict_by_road_id, roads_dist
         for road_id in list(cross_points.items())[_n][1]:
             if road_id not in solver_answer:
                 solver_answer[road_id] = {}
-            solver_answer[road_id][list(cross_points.items())[_n][0][0]] = cp_list[_n].solution_value()
+            solver_answer[road_id][list(cross_points.items())[
+                _n][0][0]] = cp_list[_n].solution_value()
 
     for _n in range(len(touch_points)):
         for road_id in list(touch_points.items())[_n][1][1]:
             if road_id not in solver_answer:
                 solver_answer[road_id] = {}
-            solver_answer[road_id][list(touch_points.items())[_n][0]] = tp_list[_n].solution_value()
+            solver_answer[road_id][list(touch_points.items())[
+                _n][0]] = tp_list[_n].solution_value()
 
     for _n in range(len(end_points)):
         for road_id in list(end_points.items())[_n][1][1]:
             if road_id not in solver_answer:
                 solver_answer[road_id] = {}
-            solver_answer[road_id][list(end_points.items())[_n][0]] = ep_list[_n].solution_value()
+            solver_answer[road_id][list(end_points.items())[
+                _n][0]] = ep_list[_n].solution_value()
 
     # 将线性规划得到的带高度的点与 short_line （也就是 original_road_string_data）融合起来，
     # 融合需要借助postgis。做高度上的插值，插值后输出到kml。
@@ -415,8 +419,8 @@ def smooth_z_axis(complete_road_string_data, key_points_z_value):
         if road.road_id not in key_points_z_value:
             continue
         points_z_value = key_points_z_value[road.road_id]
-        road.smooth_z_axis(dbmanager.get_merged_road(
-            road.road_id, points_z_value.keys()), points_z_value)
+
+        road.smooth_z_axis(points_z_value.keys(), points_z_value)
 
 
 if __name__ == '__main__':

@@ -51,13 +51,12 @@ class Road(object):
                 if point.altitude != -99:
                     points_z_value[(point.longitude,point.latitude)] = point.altitude
 
-        road_point_json = geojson.loads(road_point_data)
         points_list = []
-        for location in road_point_json['coordinates']:
+        for location in self.merge_other_points([GeoPoint(p) for p in points_z_value.keys()]):
             z_value = -99
-            if (location[0], location[1]) in points_z_value:
-                z_value = points_z_value[(location[0], location[1])]
-            points_list.append(GeoPoint(location, z_value))
+            if (location.longitude,location.latitude) in points_z_value:
+                z_value = points_z_value[(location.longitude,location.latitude)]
+            points_list.append(GeoPoint((location.longitude,location.latitude), z_value))
         
         distance_list = []
         index_list = []
@@ -81,3 +80,38 @@ class Road(object):
         self.points_with_z_value_list = points_list
         for short_line in self.short_line_list:
             short_line.save_z_value(points_list)
+
+    def merge_other_points(self, other_points):
+        point_list = []
+
+        if self.short_line_list[0].start_point.equal(self.start_point):
+            point_list += self.short_line_list[0].point_list
+        else:
+            point_list += self.short_line_list[0].point_list[::-1]
+
+        for short_line in self.short_line_list[1:]:
+            if short_line.start_point.equal(point_list[-1]):
+                del point_list[-1]
+                point_list += short_line.point_list
+            else:
+                del point_list[-1]
+                point_list += short_line.point_list[::-1]
+        
+        for point in other_points:
+            next_point = False
+            for p in point_list:
+                if p.equal(point):
+                    next_point = True
+                    break
+            if next_point:
+                continue
+            distance_list = []
+            distance_list.append(get_distance(point, point_list[0]) * 2)
+            for n in range(0, len(point_list) - 1):
+                distance_list.append(get_distance(point, point_list[n]) + get_distance(point, point_list[n+1]) - get_distance(point_list[n], point_list[n+1]))
+            distance_list.append(get_distance(point, point_list[-1]) * 2)
+
+            point_list.insert(distance_list.index(min(distance_list)), point)
+
+        return point_list
+# ','.join(["ST_GeomFromText('POINT({0} {1})', 3857)".format(p.longitude, p.latitude) for p in point_list])
